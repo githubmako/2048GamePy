@@ -20,4 +20,5 @@ cd Path/To/Your/Folder
 python main.py
 
 ```
+![ssofgame](game2048.png)
 
