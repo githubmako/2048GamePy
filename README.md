@@ -1,4 +1,4 @@
-### How to run 2048 Game
+# How to run 2048 Game
 
 ## Import files from git
 
