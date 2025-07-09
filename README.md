@@ -20,5 +20,8 @@ cd Path/To/Your/Folder
 python main.py
 
 ```
-![ssofgame](game2048.png)
+
+<p align="center">
+  <img src="game2048.png" alt="ssofgame"/>
+</p>
 
