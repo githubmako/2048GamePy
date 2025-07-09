@@ -1,156 +1,156 @@
 import pygame
 
 class Game:
-    def __init__(self, okno):
-        self.okno = okno
-        self.szerokosc = 4
-        self.wysokosc = 4
-        self.rozmiar_kafelka = 100
-        self.odstep = 10
-        self.plansza = [[0 for _ in range(self.szerokosc)] for _ in range(self.wysokosc)]
-        self.punkty = 0
-        self.czcionka = pygame.font.SysFont("arial", 32)
-        self.czcionka_duza = pygame.font.SysFont("arial", 48, bold=True)
-        self.koniec = False
-        self.wygrana = False
-        self.resetuj_gre()
+    def __init__(self, window):
+        self.window = window
+        self.width = 4
+        self.height = 4
+        self.tile_size = 100
+        self.spacing = 10
+        self.board = [[0 for _ in range(self.width)] for _ in range(self.height)]
+        self.score = 0
+        self.font = pygame.font.SysFont("arial", 32)
+        self.large_font = pygame.font.SysFont("arial", 48, bold=True)
+        self.game_over = False
+        self.won = False
+        self.reset_game()
 
-    def resetuj_gre(self):
-        self.plansza = [[0 for _ in range(self.szerokosc)] for _ in range(self.wysokosc)]
-        self.punkty = 0
-        self.koniec = False
-        self.wygrana = False
-        self.dodaj_nowy_kafelek()
-        self.dodaj_nowy_kafelek()
+    def reset_game(self):
+        self.board = [[0 for _ in range(self.width)] for _ in range(self.height)]
+        self.score = 0
+        self.game_over = False
+        self.won = False
+        self.add_new_tile()
+        self.add_new_tile()
 
-    def dodaj_nowy_kafelek(self):
+    def add_new_tile(self):
         import random
-        puste = [(r, c) for r in range(self.wysokosc) for c in range(self.szerokosc) if self.plansza[r][c] == 0]
-        if puste:
-            r, c = random.choice(puste)
-            self.plansza[r][c] = 2 if random.random() < 0.9 else 4
+        empty = [(r, c) for r in range(self.height) for c in range(self.width) if self.board[r][c] == 0]
+        if empty:
+            r, c = random.choice(empty)
+            self.board[r][c] = 2 if random.random() < 0.9 else 4
 
-    def przetworz_zdarzenie(self, zdarzenie):
-        if self.koniec or self.wygrana:
-            if zdarzenie.type == pygame.KEYDOWN and zdarzenie.key == pygame.K_r:
-                self.resetuj_gre()
+    def process_event(self, event):
+        if self.game_over or self.won:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_r:
+                self.reset_game()
             return
 
-        if zdarzenie.type == pygame.KEYDOWN:
-            if zdarzenie.key == pygame.K_LEFT:
-                self.ruch_lewo()
-            elif zdarzenie.key == pygame.K_RIGHT:
-                self.ruch_prawo()
-            elif zdarzenie.key == pygame.K_UP:
-                self.ruch_gora()
-            elif zdarzenie.key == pygame.K_DOWN:
-                self.ruch_dol()
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                self.move_left()
+            elif event.key == pygame.K_RIGHT:
+                self.move_right()
+            elif event.key == pygame.K_UP:
+                self.move_up()
+            elif event.key == pygame.K_DOWN:
+                self.move_down()
 
-    def aktualizuj(self):
-        if not self.koniec and not self.wygrana:
-            if self.czy_wygrana():
-                self.wygrana = True
-            elif not self.czy_mozliwy_ruch():
-                self.koniec = True
+    def update(self):
+        if not self.game_over and not self.won:
+            if self.is_won():
+                self.won = True
+            elif not self.is_move_possible():
+                self.game_over = True
 
-    def rysuj(self):
-        self.okno.fill((187, 173, 160))
-        for r in range(self.wysokosc):
-            for c in range(self.szerokosc):
-                wartosc = self.plansza[r][c]
-                kolor = (205, 193, 180) if wartosc == 0 else (238, 228, 218)
-                x = c * (self.rozmiar_kafelka + self.odstep) + self.odstep
-                y = r * (self.rozmiar_kafelka + self.odstep) + self.odstep + 100
-                pygame.draw.rect(self.okno, kolor, (x, y, self.rozmiar_kafelka, self.rozmiar_kafelka), border_radius=8)
-                if wartosc:
-                    tekst = self.czcionka.render(str(wartosc), True, (119, 110, 101))
-                    tekst_rect = tekst.get_rect(center=(x + self.rozmiar_kafelka // 2, y + self.rozmiar_kafelka // 2))
-                    self.okno.blit(tekst, tekst_rect)
-        # Wyświetlanie punktów
-        punkty_tekst = self.czcionka.render(f"Punkty: {self.punkty}", True, (119, 110, 101))
-        self.okno.blit(punkty_tekst, (10, 30))
+    def draw(self):
+        self.window.fill((187, 173, 160))
+        for r in range(self.height):
+            for c in range(self.width):
+                value = self.board[r][c]
+                color = (205, 193, 180) if value == 0 else (238, 228, 218)
+                x = c * (self.tile_size + self.spacing) + self.spacing
+                y = r * (self.tile_size + self.spacing) + self.spacing + 100
+                pygame.draw.rect(self.window, color, (x, y, self.tile_size, self.tile_size), border_radius=8)
+                if value:
+                    text = self.font.render(str(value), True, (119, 110, 101))
+                    text_rect = text.get_rect(center=(x + self.tile_size // 2, y + self.tile_size // 2))
+                    self.window.blit(text, text_rect)
+      
+        score_text = self.font.render(f"Score: {self.score}", True, (119, 110, 101))
+        self.window.blit(score_text, (10, 30))
 
-        # Komunikaty końca gry
-        if self.koniec:
-            self.wyswietl_komunikat("Koniec gry!", "Naciśnij R aby zagrać ponownie")
-        elif self.wygrana:
-            self.wyswietl_komunikat("Wygrałeś!", "Naciśnij R aby zagrać ponownie")
+       
+        if self.game_over:
+            self.display_message("Game Over!", "Press R to play again")
+        elif self.won:
+            self.display_message("You Won!", "Press R to play again")
 
-    def wyswietl_komunikat(self, tekst1, tekst2):
-        overlay = pygame.Surface(self.okno.get_size(), pygame.SRCALPHA)
+    def display_message(self, text1, text2):
+        overlay = pygame.Surface(self.window.get_size(), pygame.SRCALPHA)
         overlay.fill((255, 255, 255, 180))
-        self.okno.blit(overlay, (0, 0))
-        t1 = self.czcionka_duza.render(tekst1, True, (119, 110, 101))
-        t2 = self.czcionka.render(tekst2, True, (119, 110, 101))
-        rect1 = t1.get_rect(center=(self.okno.get_width() // 2, self.okno.get_height() // 2 - 30))
-        rect2 = t2.get_rect(center=(self.okno.get_width() // 2, self.okno.get_height() // 2 + 30))
-        self.okno.blit(t1, rect1)
-        self.okno.blit(t2, rect2)
+        self.window.blit(overlay, (0, 0))
+        t1 = self.large_font.render(text1, True, (119, 110, 101))
+        t2 = self.font.render(text2, True, (119, 110, 101))
+        rect1 = t1.get_rect(center=(self.window.get_width() // 2, self.window.get_height() // 2 - 30))
+        rect2 = t2.get_rect(center=(self.window.get_width() // 2, self.window.get_height() // 2 + 30))
+        self.window.blit(t1, rect1)
+        self.window.blit(t2, rect2)
 
-    def ruch_lewo(self):
-        zmieniono = False
-        for r in range(self.wysokosc):
-            wiersz = [v for v in self.plansza[r] if v != 0]
-            nowy_wiersz = []
+    def move_left(self):
+        changed = False
+        for r in range(self.height):
+            row = [v for v in self.board[r] if v != 0]
+            new_row = []
             i = 0
-            while i < len(wiersz):
-                if i + 1 < len(wiersz) and wiersz[i] == wiersz[i + 1]:
-                    nowy_wiersz.append(wiersz[i] * 2)
-                    self.punkty += wiersz[i] * 2
+            while i < len(row):
+                if i + 1 < len(row) and row[i] == row[i + 1]:
+                    new_row.append(row[i] * 2)
+                    self.score += row[i] * 2
                     i += 2
-                    zmieniono = True
+                    changed = True
                 else:
-                    nowy_wiersz.append(wiersz[i])
+                    new_row.append(row[i])
                     i += 1
-            nowy_wiersz += [0] * (self.szerokosc - len(nowy_wiersz))
-            if nowy_wiersz != self.plansza[r]:
-                zmieniono = True
-            self.plansza[r] = nowy_wiersz
-        if zmieniono:
-            self.dodaj_nowy_kafelek()
+            new_row += [0] * (self.width - len(new_row))
+            if new_row != self.board[r]:
+                changed = True
+            self.board[r] = new_row
+        if changed:
+            self.add_new_tile()
 
-    def ruch_prawo(self):
-        self.odwroc_plansze()
-        self.ruch_lewo()
-        self.odwroc_plansze()
+    def move_right(self):
+        self.reverse_board()
+        self.move_left()
+        self.reverse_board()
 
-    def ruch_gora(self):
-        self.transponuj_plansze()
-        self.ruch_lewo()
-        self.transponuj_plansze()
+    def move_up(self):
+        self.transpose_board()
+        self.move_left()
+        self.transpose_board()
 
-    def ruch_dol(self):
-        self.transponuj_plansze()
-        self.ruch_prawo()
-        self.transponuj_plansze()
+    def move_down(self):
+        self.transpose_board()
+        self.move_right()
+        self.transpose_board()
 
-    def odwroc_plansze(self):
-        for r in range(self.wysokosc):
-            self.plansza[r] = self.plansza[r][::-1]
+    def reverse_board(self):
+        for r in range(self.height):
+            self.board[r] = self.board[r][::-1]
 
-    def transponuj_plansze(self):
-        self.plansza = [list(w) for w in zip(*self.plansza)]
+    def transpose_board(self):
+        self.board = [list(w) for w in zip(*self.board)]
 
-    def czy_wygrana(self):
-        for r in range(self.wysokosc):
-            for c in range(self.szerokosc):
-                if self.plansza[r][c] == 2048:
+    def is_won(self):
+        for r in range(self.height):
+            for c in range(self.width):
+                if self.board[r][c] == 2048:
                     return True
         return False
 
-    def czy_mozliwy_ruch(self):
-        # Czy są puste pola?
-        for r in range(self.wysokosc):
-            for c in range(self.szerokosc):
-                if self.plansza[r][c] == 0:
+    def is_move_possible(self):
+        
+        for r in range(self.height):
+            for c in range(self.width):
+                if self.board[r][c] == 0:
                     return True
-        # Czy są możliwe połączenia?
-        for r in range(self.wysokosc):
-            for c in range(self.szerokosc - 1):
-                if self.plansza[r][c] == self.plansza[r][c + 1]:
+       
+        for r in range(self.height):
+            for c in range(self.width - 1):
+                if self.board[r][c] == self.board[r][c + 1]:
                     return True
-        for c in range(self.szerokosc):
-            for r in range(self.wysokosc - 1):
-                if self.plansza[r][c] == self.plansza[r + 1][c]:
+        for c in range(self.width):
+            for r in range(self.height - 1):
+                if self.board[r][c] == self.board[r + 1][c]:
                     return True
         return False

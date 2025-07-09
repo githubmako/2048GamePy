@@ -3,10 +3,10 @@ from game import Game
 
 def main():
     pygame.init()
-    okno = pygame.display.set_mode((500, 600))
+    window = pygame.display.set_mode((500, 600))
     pygame.display.set_caption("2048")
-    zegar = pygame.time.Clock()
-    gra = Game(okno)
+    clock = pygame.time.Clock()
+    game = Game(window)
 
     running = True
     while running:
@@ -14,12 +14,12 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
             else:
-                gra.przetworz_zdarzenie(event)
+                game.process_event(event)  
 
-        gra.aktualizuj()
-        gra.rysuj()
+        game.update()
+        game.draw()
         pygame.display.flip()
-        zegar.tick(60)
+        clock.tick(60)
 
     pygame.quit()
 
