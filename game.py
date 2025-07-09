@@ -54,11 +54,11 @@ class Game:
                 self.game_over = True
 
     def draw(self):
-        self.window.fill((187, 173, 160))
+        self.window.fill((196,195,208))
         for r in range(self.height):
             for c in range(self.width):
                 value = self.board[r][c]
-                color = (205, 193, 180) if value == 0 else (238, 228, 218)
+                color = (72,61,139) if value == 0 else (238, 228, 218)
                 x = c * (self.tile_size + self.spacing) + self.spacing
                 y = r * (self.tile_size + self.spacing) + self.spacing + 100
                 pygame.draw.rect(self.window, color, (x, y, self.tile_size, self.tile_size), border_radius=8)
