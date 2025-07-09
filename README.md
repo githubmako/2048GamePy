@@ -22,6 +22,6 @@ python main.py
 ```
 
 <p align="center">
-  <img src="game2048.png" alt="ssofgame" width="220"/>
+  <img src="game2048.png" alt="ssofgame" width="320"/>
 </p>
 
